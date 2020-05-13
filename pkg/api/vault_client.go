@@ -54,9 +54,19 @@ func (c *vaultClient) QuerySecret(path string, field string) (string, error) {
 	}
 
 	secretValue, ok := secret.Data[field]
-
 	if !ok {
-		return "", fmt.Errorf("secret at path '%s' has no field '%s'", path, field)
+		m, ok := secret.Data["data"].(map[string]interface{})
+		if !ok {
+			fmt.Printf("%T %#v\n", secret.Data["data"], secret.Data["data"])
+			return "", fmt.Errorf("error reading path '%s'", path)
+		}
+
+		secretValue, ok := m[field]
+
+		if !ok {
+			return "", fmt.Errorf("secret at path '%s' has no field '%s'", path, field)
+		}
+		return secretValue.(string), nil
 	}
 
 	return secretValue.(string), nil
