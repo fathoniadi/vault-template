@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Luzifer/rconfig"
-	"github.com/actano/vault-template/pkg/template"
+	"github.com/minhdanh/vault-template/pkg/template"
 	"io/ioutil"
 	"log"
 	"os"
