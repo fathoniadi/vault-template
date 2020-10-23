@@ -12,7 +12,7 @@
 
 [[constraint]]
   name = "github.com/Masterminds/sprig"
-  version = "2.17.1"
+  version = "3.1.0"
 
 [[constraint]]
   name = "github.com/golang/mock"
