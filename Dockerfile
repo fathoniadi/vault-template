@@ -1,11 +1,5 @@
 FROM golang:1.15-alpine as build
 
-# install dependencies
-# ENV GO111MODULE=on
-# WORKDIR $GOPATH/src/github.com/minhdanh/vault-template
-# COPY go.mod go.sum ./
-# RUN go get .
-
 # build binary
 WORKDIR /src
 COPY . ./
