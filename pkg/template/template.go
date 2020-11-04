@@ -2,7 +2,7 @@ package template
 
 import (
 	"bytes"
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 	"github.com/minhdanh/vault-template/pkg/api"
 	"os"
 	"strings"

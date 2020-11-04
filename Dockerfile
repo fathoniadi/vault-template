@@ -1,16 +1,13 @@
-FROM golang:1.11-alpine as build
-
-# install go dep (and git which is needed by dep)
-RUN apk update && apk add --no-cache git ca-certificates
-RUN wget https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 -O /usr/local/bin/dep
-RUN chmod +x /usr/local/bin/dep
+FROM golang:1.15-alpine as build
 
 # install dependencies
-WORKDIR $GOPATH/src/github.com/minhdanh/vault-template
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure --vendor-only
+# ENV GO111MODULE=on
+# WORKDIR $GOPATH/src/github.com/minhdanh/vault-template
+# COPY go.mod go.sum ./
+# RUN go get .
 
 # build binary
+WORKDIR /src
 COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go test ./...
 RUN CGO_ENABLED=0 GOOS=linux go build -o /vault-template
