@@ -1,10 +1,10 @@
 package template
 
 import (
-	"github.com/minhdanh/vault-template/mocks/api"
 	"github.com/golang/mock/gomock"
+	"github.com/minhdanh/vault-template/mocks/api"
 	"github.com/pkg/errors"
-	"gotest.tools/assert"
+	"gotest.tools/v3/assert"
 	"testing"
 )
 
