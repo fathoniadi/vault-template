@@ -13,9 +13,10 @@ type VaultClient interface {
 
 type vaultClient struct {
 	apiClient *api.Client
+	secretVersion string
 }
 
-func NewVaultClient(vaultEndpoint string, vaultToken string) (VaultClient, error) {
+func NewVaultClient(vaultEndpoint string, vaultToken string, secretVersion string) (VaultClient, error) {
 	apiClient, err := api.NewClient(&api.Config{
 		Address: vaultEndpoint,
 	})
@@ -28,26 +29,27 @@ func NewVaultClient(vaultEndpoint string, vaultToken string) (VaultClient, error
 
 	vaultClient := &vaultClient{
 		apiClient: apiClient,
+		secretVersion: "?version=" + secretVersion 
 	}
 
 	return vaultClient, nil
 }
 
 func (c *vaultClient) QuerySecretMap(path string) (map[string]interface{}, error) {
-	secret, err := c.apiClient.Logical().Read(path)
+	secret, err := c.apiClient.Logical().Read(path + c.secretVersion)
 
 	if err != nil {
 		return nil, err
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("path '%s' is not found", path)
+		return nil, fmt.Errorf("path '%s' is not found in version '%s'", path, c.secretVersion)
 	}
 
 	return secret.Data, nil
 }
 
 func (c *vaultClient) QuerySecret(path string, field string) (string, error) {
-	secret, err := c.apiClient.Logical().Read(path)
+	secret, err := c.apiClient.Logical().Read(path + c.secretVersion)
 
 	if err != nil {
 		return "", err
@@ -64,7 +66,7 @@ func (c *vaultClient) QuerySecret(path string, field string) (string, error) {
 		secretValue, ok := m[field]
 
 		if !ok {
-			return "", fmt.Errorf("secret at path '%s' has no field '%s'", path, field)
+			return "", fmt.Errorf("secret at path '%s' in version '%s' has no field '%s'", path, c.secretVersion, field)
 		}
 		return secretValue.(string), nil
 	}

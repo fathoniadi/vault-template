@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Luzifer/rconfig"
-	"github.com/minhdanh/vault-template/pkg/template"
+	"github.com/fathoniadi/vault-template/pkg/template"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,6 +14,7 @@ var (
 		VaultTokenFile string `flag:"vault-token-file,f" env:"VAULT_TOKEN_FILE" description:"The file which contains the vault token. Also configurable via VAULT_TOKEN_FILE."`
 		TemplateFile   string `flag:"template,t" env:"TEMPLATE_FILE" description:"The template file to render. Also configurable via TEMPLATE_FILE."`
 		OutputFile     string `flag:"output,o" env:"OUTPUT_FILE" description:"The output file. Also configurable via OUTPUT_FILE."`
+		secretVersion  string `flag:"secret-version,sv" env:"SECRET_VERSION" defaukt:"1" description:"Version secert. Also configurable via SECRET_VERSION."`
 	}{}
 )
 
@@ -41,6 +42,8 @@ func config() {
 	if cfg.OutputFile == "" {
 		usage("No output file given")
 	}
+
+
 }
 
 func main() {
@@ -52,7 +55,7 @@ func main() {
 		log.Fatalf("Unable to read vault token file: %s", err)
 	}
 
-	renderer, err := template.NewVaultTemplateRenderer(string(vaultToken), cfg.VaultEndpoint)
+	renderer, err := template.NewVaultTemplateRenderer(string(vaultToken), cfg.VaultEndpoint, cfg.secretVersion)
 
 	if err != nil {
 		log.Fatalf("Unable to create renderer: %s", err)
@@ -64,7 +67,7 @@ func main() {
 		log.Fatalf("Unable to read template file: %s", err)
 	}
 
-	renderedContent, err := renderer.RenderTemplate(string(templateContent))
+	renderedContent, err := renderer.RenderTemplate(string(templateContent), cfg.VersionSecret)
 
 	if err != nil {
 		log.Fatalf("Unable to render template: %s", err)

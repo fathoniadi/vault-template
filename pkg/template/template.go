@@ -3,7 +3,7 @@ package template
 import (
 	"bytes"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/minhdanh/vault-template/pkg/api"
+	"github.com/fathoniadi/vault-template/pkg/api"
 	"os"
 	"strings"
 	"text/template"
@@ -11,6 +11,7 @@ import (
 
 type VaultTemplateRenderer struct {
 	vaultClient api.VaultClient
+	secretVersion string
 }
 
 func NewVaultTemplateRenderer(vaultToken, vaultEndpoint string) (*VaultTemplateRenderer, error) {
