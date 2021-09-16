@@ -111,17 +111,17 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 	
 	for key, value := range m {
 	
-		type_value := reflect.TypeOf(value).Kind()
+		typeValue := reflect.TypeOf(value).Kind()
 	
-		if type_value == reflect.Slice || type_value == reflect.Map {
+		if typeValue == reflect.Slice || typeValue == reflect.Map {
 	
-			json_data, err := json.Marshal(value)
+			jsonData, err := json.Marshal(value)
 	
 			if err != nil {
 				return nil, fmt.Errorf("Error parsing field %s", key)
 			}
 	
-			m[key] = string(json_data)
+			m[key] = string(jsonData)
 		}
 	}
 	
@@ -178,13 +178,13 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 			return secretValue.(string), nil
 		}
 
-		json_data, err := json.Marshal(secretValue)
+		jsonData, err := json.Marshal(secretValue)
 
 		if err != nil {
 			return "", fmt.Errorf("Error parsing field %s", field)
 		}
 
-		return string(json_data), nil
+		return string(jsonData), nil
 
 	}
 
