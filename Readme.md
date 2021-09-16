@@ -21,6 +21,10 @@ Usage of ./vault-template:
   
   -u, --username string           Username to login
                                   Also configurable via USERNAME
+
+  -e, --environment string        Path environment templating
+                                  Also configurable via ENVIRONMENT
+
   -p, --password string           Password to login
                                   Also configurable via PASSWORD
 
