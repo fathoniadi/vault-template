@@ -148,12 +148,12 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 
 	secret, err := c.apiClient.Logical().ReadWithData(string(c.pathHandler.PathV2(path)), data)
 
-	if secret == nil {
-		return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
-	}
-
 	if err != nil {
 		return "", err
+	}
+
+	if secret == nil {
+		return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 	}
 
 	secretValue, ok := secret.Data[field]

@@ -89,6 +89,10 @@ func (p *pathHandler) RenderPath(path string) (string, error) {
 		return "", err
 	}
 
+	if len(params) == 0 {
+		return path, nil
+	}
+
 	templatePath, err := template.New("path").Parse(path)
 
 	if err != nil {
