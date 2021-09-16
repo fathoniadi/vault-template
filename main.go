@@ -14,7 +14,7 @@ var (
 		VaultToken string `flag:"token,k" env:"VAULT_TOKEN" description:"File containt vault token. Also configurable via VAULT_TOKEN."`
 		TemplateFile   string `flag:"template,t" env:"TEMPLATE_FILE" description:"The template file to render. Also configurable via TEMPLATE_FILE."`
 		OutputFile     string `flag:"output,o" env:"OUTPUT_FILE" description:"The output file. Also configurable via OUTPUT_FILE."`
-		PathParams    string `flag:"path-params,p" env:"PATHPARAMS" default="" description:"Dynamic variable path templating. Also configurable via PATHPARAMS. Ex. \"project=website,environment=development\""`
+		DynamicPathVariable    string `flag:"path-params,p" env:"DYNAMICPATHVARIABLE" default="" description:"Dynamic variable path templating. Also configurable via DYNAMICPATHVARIABLE. Ex. \"project=website,environment=development\""`
 		Username    string `flag:"username,U" env:"USERNAME" description:"Username to login. Also configurable via USERNAME."`
 		Password    string `flag:"password,W" env:"PASSWORD" description:"Password to login. Also configurable via PASSWORD."`
 		UserPassPath    string `flag:"userpass-path,P" env:"USERPASS_PATH" default:"userpass" description:"Path user was registered. Also configurable via USERPASS_PATH."`
@@ -80,7 +80,7 @@ func main() {
 
 	credentials := config()
 
-	renderer, err := template.NewVaultTemplateRenderer(credentials, cfg.VaultHost, cfg.PathParams)
+	renderer, err := template.NewVaultTemplateRenderer(credentials, cfg.VaultHost, cfg.DynamicPathVariable)
 
 	if err != nil {
 		log.Fatalf("Unable to create renderer: %s", err)

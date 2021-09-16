@@ -8,7 +8,7 @@ import (
 )
 
 type PathHandler interface {
-	getPathParams() (string)
+	getDynamicPathVariable() (string)
 	PathV2(path string) (string)
 	RenderPath(path string) (string, error)
 	GetDynamicParamParsed() (map[string]interface{}, error)
@@ -16,30 +16,30 @@ type PathHandler interface {
 }
 
 type pathHandler struct {
-	pathParams string
+	dynamiCPathVariable string
 }
 
-func NewPathHandler(pathParams string) (PathHandler) {
+func NewPathHandler(dynamiCPathVariable string) (PathHandler) {
 
 	pathHandler := &pathHandler{
-		pathParams: pathParams,
+		dynamiCPathVariable: dynamiCPathVariable,
 	}
 
 	return pathHandler
 }
 
-func (p *pathHandler) getPathParams() (string) {
-	return p.pathParams
+func (p *pathHandler) getDynamicPathVariable() (string) {
+	return p.dynamiCPathVariable
 }
 
 func (p *pathHandler) GetDynamicParamParsed() (map[string]interface{}, error){
 	var data map[string]interface{} = make(map[string]interface{})
 
-	if (p.getPathParams() == ""){
+	if (p.getDynamicPathVariable() == ""){
 		return data, nil
 	}
 
-	params := strings.Split(p.getPathParams(), string(','))
+	params := strings.Split(p.getDynamicPathVariable(), string(','))
 
 	for _, valueParams := range params {
 
@@ -47,7 +47,7 @@ func (p *pathHandler) GetDynamicParamParsed() (map[string]interface{}, error){
 		param := strings.Split(valueParams, string('='))
 
 		if len(param) <= 1 {
-			return nil, fmt.Errorf("Invalid dynamic path variable templating declaration %s", p.getPathParams() )
+			return nil, fmt.Errorf("Invalid dynamic path variable templating declaration %s", p.getDynamicPathVariable() )
 		}
 
 		data[param[0]] = param[1]
@@ -69,7 +69,7 @@ func (p *pathHandler) PathParamsParsing(parameters []string) (map[string][]strin
 
 			param := strings.Split(valueParams, string('='))
 			if len(param) <= 1 {
-				return nil, fmt.Errorf("Invalid path parameter declaration %s", p.getPathParams() )
+				return nil, fmt.Errorf("Invalid path parameter declaration %s", p.getDynamicPathVariable() )
 			}
 	
 			data[param[0]] = []string{param[1]}

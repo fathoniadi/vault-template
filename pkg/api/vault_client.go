@@ -44,7 +44,7 @@ func LoginWithUserPass(apiClient *api.Client, credentials map[string]string) (st
 }
 
 
-func NewVaultClient(vaultHost string, credentials map[string]string, PathParams string) (VaultClient, error) {
+func NewVaultClient(vaultHost string, credentials map[string]string, dynamicPathVariable string) (VaultClient, error) {
 	apiClient, err := api.NewClient(&api.Config{
 		Address: vaultHost,
 	})
@@ -63,7 +63,7 @@ func NewVaultClient(vaultHost string, credentials map[string]string, PathParams 
 		}
 	}
 
-	pathHandler := libraries.NewPathHandler(PathParams)
+	pathHandler := libraries.NewPathHandler(dynamicPathVariable)
 	
 	vaultClient := &vaultClient{
 		apiClient: apiClient,
