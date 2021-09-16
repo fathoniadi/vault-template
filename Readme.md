@@ -80,7 +80,7 @@ with specific version:
 ```
 
 ```text
-name: john
+name: johni
 password: secret
 ```
 
