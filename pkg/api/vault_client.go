@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/vault/api"
 	"strings"
 	"reflect"
+	"encoding/json"
 
 )
 
@@ -64,8 +65,13 @@ func NewVaultClient(vaultEndpoint string, vaultToken string) (VaultClient, error
 
 
 func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[string]interface{}, error) {
-	
+	var versionError string
+
 	data, err := ParsingParameter(parameters)
+
+	if _, ok := data["version"]; ok {
+		versionError = " in version " + data["version"][0]
+	}
 
 	if err != nil  {
 		return nil, err
@@ -77,7 +83,7 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 		return nil, err
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("path '%s' is not found in version '%s'", path, "a")
+		return nil, fmt.Errorf("path '%s' is not found'%s'", path, versionError)
 	}
 
 	m, ok := secret.Data["data"].(map[string]interface{})
@@ -86,12 +92,41 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 		return nil, fmt.Errorf("error reading path '%s'", path)
 	}
 
+	for key, value := range m {
+		type_value := reflect.TypeOf(value).Kind()
+
+		if type_value == reflect.Slice {
+			json_data, err := json.Marshal(value)
+			if err != nil {
+				return nil, fmt.Errorf("Error parsing field %s", key)
+			}
+
+			m[key] = string(json_data)
+
+		}
+
+		if type_value == reflect.Map {
+			json_data, err := json.Marshal(value)
+			if err != nil {
+				return nil, fmt.Errorf("Error parsing field %s", key)
+			}
+
+			m[key] = string(json_data)
+		}
+	}
+
 	return m, nil
 }
 
 func (c *vaultClient) QuerySecret(path string, field string, parameters ...string) (string, error) {
 
+	var versionError string
+
 	data, err := ParsingParameter(parameters)
+
+	if _, ok := data["version"]; ok {
+		versionError = " in version " + data["version"][0]
+	}
 
 	if err != nil  {
 		return "", err
@@ -101,7 +136,7 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 
 
 	if secret == nil {
-		return "", fmt.Errorf("secret at path '%s' in version '%s' has no field '%s'", path, "a", field)
+		return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 	}
 
 	if err != nil {
@@ -117,12 +152,10 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 			return "", fmt.Errorf("error reading path '%s'", path)
 		}
 
-
-
 		secretValue, ok := m[field]
 
 		if !ok {
-			return "", fmt.Errorf("secret at path '%s' in version '%s' has no field '%s'", path, "a", field)
+			return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 		}
 
 		typeValue := reflect.TypeOf(secretValue).Kind()
@@ -131,12 +164,13 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 			return secretValue.(string), nil
 		}
 		
+		json_data, err := json.Marshal(secretValue)
 
-		valueConverted := fmt.Sprintf("%v", secretValue)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing field %s", field)
+		}
 
-		fmt.Println(valueConverted)
-	
-		return valueConverted, nil
+		return string(json_data), nil
 	}
 
 	return secretValue.(string), nil
