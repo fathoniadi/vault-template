@@ -11,10 +11,14 @@ import (
 var (
 	cfg = struct {
 		VaultEndpoint  string `flag:"vault,v" env:"VAULT_ADDR" default:"https://127.0.0.1:8200" description:"Vault API endpoint. Also configurable via VAULT_ADDR."`
-		VaultTokenFile string `flag:"vault-token-file,f" env:"VAULT_TOKEN_FILE" description:"The file which contains the vault token. Also configurable via VAULT_TOKEN_FILE."`
+		VaultToken string `flag:"vault-token,f" env:"VAULT_TOKEN" description:"The vault token. Also configurable via VAULT_TOKEN."`
 		TemplateFile   string `flag:"template,t" env:"TEMPLATE_FILE" description:"The template file to render. Also configurable via TEMPLATE_FILE."`
 		OutputFile     string `flag:"output,o" env:"OUTPUT_FILE" description:"The output file. Also configurable via OUTPUT_FILE."`
-		Environment    string `flag:"env,e" env:"Environment" description:"The output file. Also configurable via Environment."`
+		Environment    string `flag:"env,e" env:"ENVIRONMENT" description:"The output file. Also configurable via ENVIRONMENT."`
+		Username    string `flag:"username,u" env:"USERNAME" description:"The output file. Also configurable via USERNAME."`
+		Password    string `flag:"password,p" env:"PASSWORD" description:"The output file. Also configurable via PASSWORD."`
+		UserPassPath    string `flag:"userpass-path,P" env:"USERPASS_PATH" description:"The output file. Also configurable via USERPASS_PATH."`
+
 	}{}
 )
 
@@ -31,7 +35,7 @@ func config() {
 		log.Fatalf("Error while parsing the command line arguments: %s", err)
 	}
 
-	if cfg.VaultTokenFile == "" {
+	if cfg.VaultToken == "" {
 		usage("No vault token file given")
 	}
 
@@ -53,11 +57,7 @@ func config() {
 func main() {
 	config()
 
-	vaultToken, err := ioutil.ReadFile(cfg.VaultTokenFile)
-
-	if err != nil {
-		log.Fatalf("Unable to read vault token file: %s", err)
-	}
+	vaultToken := cfg.VaultToken
 
 	renderer, err := template.NewVaultTemplateRenderer(string(vaultToken), cfg.VaultEndpoint, cfg.Environment)
 
