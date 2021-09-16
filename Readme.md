@@ -16,8 +16,17 @@ Usage of ./vault-template:
   -v, --vault string              Vault API endpoint.
                                   Also configurable via VAULT_ADDR.
                                   (default "http://127.0.0.1:8200")
-  -f, --vault-token-file string   The file which contains the vault token.
+  -f, --vault-token string        The vault token.
                                   Also configurable via VAULT_TOKEN_FILE.
+  
+  -u, --username string           Username to login
+                                  Also configurable via USERNAME
+  -p, --password string           Password to login
+                                  Also configurable via PASSWORD
+
+  -P --userpass-path string       Path user was registered. 
+                                  Also configurable via USERPASS_PATH.
+                                  (default "userpass")
 ```
 
 A [docker image is availabe on Dockerhub.](https://hub.docker.com/r/rplan/vault-template)
@@ -109,5 +118,5 @@ app:
 
 And command that use this template in kubernetes:
 ```
-CUSTOMER=internal STAGE=test PROJECT=myprj vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f token
+CUSTOMER=internal STAGE=test PROJECT=myprj vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f "$(token)"
 ```
