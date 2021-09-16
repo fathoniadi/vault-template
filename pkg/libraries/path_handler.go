@@ -35,6 +35,10 @@ func (p *pathHandler) getPathParams() (string) {
 func (p *pathHandler) GetDynamicParamParsed() (map[string]interface{}, error){
 	var data map[string]interface{} = make(map[string]interface{})
 
+	if (p.getPathParams() == ""){
+		return data, nil
+	}
+
 	params := strings.Split(p.getPathParams(), string(','))
 
 	for _, valueParams := range params {
@@ -43,7 +47,7 @@ func (p *pathHandler) GetDynamicParamParsed() (map[string]interface{}, error){
 		param := strings.Split(valueParams, string('='))
 
 		if len(param) <= 1 {
-			return nil, fmt.Errorf("Invalid dynamic path parameter declaration %s", p.getPathParams() )
+			return nil, fmt.Errorf("Invalid dynamic path variable templating declaration %s", p.getPathParams() )
 		}
 
 		data[param[0]] = param[1]

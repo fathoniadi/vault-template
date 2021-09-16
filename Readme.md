@@ -45,8 +45,6 @@ Currently vault-template can render two functions:
 - `vault`
 - `vaultMap`
 
-Also it is possible to use environment variables like `{{ .STAGE }}`.
-
 The `vault` function takes two string parameters which specify the path to the secret and the field inside to return.
 
 ```gotemplate
