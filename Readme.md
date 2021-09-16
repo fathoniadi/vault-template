@@ -110,5 +110,5 @@ More real example:
 
 And command that use this template in kubernetes:
 ```
-CUSTOMER=internal STAGE=test PROJECT=myprj vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f "$(token)" -e development
+vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f "$(token)" -e development
 ```
