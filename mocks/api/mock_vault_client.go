@@ -33,7 +33,7 @@ func (m *MockVaultClient) EXPECT() *MockVaultClientMockRecorder {
 }
 
 // QuerySecretMap mocks base method
-func (m *MockVaultClient) QuerySecretMap(arg0 string) (map[string]interface{}, error) {
+func (m *MockVaultClient) QuerySecretMap(arg0 string, arg1 ...string) (map[string]interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QuerySecretMap", arg0)
 	ret0, _ := ret[0].(map[string]interface{})
@@ -42,7 +42,7 @@ func (m *MockVaultClient) QuerySecretMap(arg0 string) (map[string]interface{}, e
 }
 
 // QuerySecret mocks base method
-func (m *MockVaultClient) QuerySecret(arg0, arg1 string) (string, error) {
+func (m *MockVaultClient) QuerySecret(arg0, arg1, string,arg2 ...string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QuerySecret", arg0, arg1)
 	ret0, _ := ret[0].(string)
