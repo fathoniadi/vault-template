@@ -14,7 +14,6 @@ var (
 		VaultTokenFile string `flag:"vault-token-file,f" env:"VAULT_TOKEN_FILE" description:"The file which contains the vault token. Also configurable via VAULT_TOKEN_FILE."`
 		TemplateFile   string `flag:"template,t" env:"TEMPLATE_FILE" description:"The template file to render. Also configurable via TEMPLATE_FILE."`
 		OutputFile     string `flag:"output,o" env:"OUTPUT_FILE" description:"The output file. Also configurable via OUTPUT_FILE."`
-		secretVersion  string `flag:"secret-version,sv" env:"SECRET_VERSION" defaukt:"1" description:"Version secert. Also configurable via SECRET_VERSION."`
 	}{}
 )
 
@@ -55,7 +54,7 @@ func main() {
 		log.Fatalf("Unable to read vault token file: %s", err)
 	}
 
-	renderer, err := template.NewVaultTemplateRenderer(string(vaultToken), cfg.VaultEndpoint, cfg.secretVersion)
+	renderer, err := template.NewVaultTemplateRenderer(string(vaultToken), cfg.VaultEndpoint)
 
 	if err != nil {
 		log.Fatalf("Unable to create renderer: %s", err)
@@ -67,7 +66,7 @@ func main() {
 		log.Fatalf("Unable to read template file: %s", err)
 	}
 
-	renderedContent, err := renderer.RenderTemplate(string(templateContent), cfg.VersionSecret)
+	renderedContent, err := renderer.RenderTemplate(string(templateContent))
 
 	if err != nil {
 		log.Fatalf("Unable to render template: %s", err)

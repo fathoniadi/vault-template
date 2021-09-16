@@ -11,7 +11,7 @@ import (
 
 type VaultTemplateRenderer struct {
 	vaultClient api.VaultClient
-	secretVersion string
+	
 }
 
 func NewVaultTemplateRenderer(vaultToken, vaultEndpoint string) (*VaultTemplateRenderer, error) {

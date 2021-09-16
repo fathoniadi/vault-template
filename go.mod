@@ -1,4 +1,4 @@
-module github.com/minhdanh/vault-template
+module github.com/fathoniadi/vault-template
 
 go 1.15
 
@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/golang/mock v1.2.0
 	github.com/google/uuid v1.1.2 // indirect
-	github.com/hashicorp/vault/api v1.0.4
+	github.com/hashicorp/vault/api v1.1.1
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/pkg/errors v0.9.1
