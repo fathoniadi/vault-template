@@ -20,20 +20,53 @@ type vaultClient struct {
 	pathHandler libraries.PathHandler
 }
 
+func LoginWithToken(apiClient *api.Client, token string) {
+	apiClient.SetToken(strings.TrimSpace(token))
+} 
 
-func NewVaultClient(vaultEndpoint string, vaultToken string, envPath string) (VaultClient, error) {
+
+func LoginWithUserPass(apiClient *api.Client, credentials map[string]string) (string, error) {
+	options := map[string]interface{}{
+		"password": credentials["password"],
+	}
+	path := fmt.Sprintf("auth/%s/login/%s", credentials["userpass_path"] , credentials["username"])
+
+	secret, err := apiClient.Logical().Write(path, options)
+
+	if err != nil {
+		return "", err
+	}
+
+	token := secret.Auth.ClientToken
+	return token, nil
+}
+
+
+func NewVaultClient(vaultEndpoint string, credentials map[string]string, envPath string) (VaultClient, error) {
+
 
 	apiClient, err := api.NewClient(&api.Config{
 		Address: vaultEndpoint,
 	})
 
-	pathHandler := libraries.NewPathHandler(envPath)
-
 	if err != nil {
 		return nil, err
 	}
 
-	apiClient.SetToken(strings.TrimSpace(vaultToken))
+	if(credentials["auth_method"] == "token"){
+		LoginWithToken(apiClient, credentials["token"])
+	} else {
+		token, err := LoginWithUserPass(apiClient, credentials)
+		LoginWithToken(apiClient, token)
+
+		if err != nil {
+			return nil, fmt.Errorf("Invalid user or password")
+		}
+	}
+
+	pathHandler := libraries.NewPathHandler(envPath)
+
+	
 
 	vaultClient := &vaultClient{
 		apiClient: apiClient,
