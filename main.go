@@ -10,13 +10,13 @@ import (
 
 var (
 	cfg = struct {
-		VaultEndpoint  string `flag:"vault,v" env:"VAULT_ADDR" default:"https://127.0.0.1:8200" description:"Vault API endpoint. Also configurable via VAULT_ADDR."`
-		VaultToken string `flag:"vault-token,f" env:"VAULT_TOKEN" description:"File containt vault token. Also configurable via VAULT_TOKEN."`
+		VaultHost  string `flag:"host,h" env:"VAULT_HOST" default:"https://127.0.0.1:8200" description:"Vault API endpoint. Also configurable via VAULT_HOST."`
+		VaultToken string `flag:"token,k" env:"VAULT_TOKEN" description:"File containt vault token. Also configurable via VAULT_TOKEN."`
 		TemplateFile   string `flag:"template,t" env:"TEMPLATE_FILE" description:"The template file to render. Also configurable via TEMPLATE_FILE."`
 		OutputFile     string `flag:"output,o" env:"OUTPUT_FILE" description:"The output file. Also configurable via OUTPUT_FILE."`
-		Environment    string `flag:"env,e" env:"ENVIRONMENT" description:"Path environment templating. Also configurable via ENVIRONMENT."`
-		Username    string `flag:"username,u" env:"USERNAME" description:"Username to login. Also configurable via USERNAME."`
-		Password    string `flag:"password,p" env:"PASSWORD" description:"Password to login. Also configurable via PASSWORD."`
+		PathParams    string `flag:"path-params,p" env:"PATHPARAMS" default="" description:"Dynamic path parameter templating. Also configurable via PATHPARAMS. Ex. \"project=website,environment=development\""`
+		Username    string `flag:"username,U" env:"USERNAME" description:"Username to login. Also configurable via USERNAME."`
+		Password    string `flag:"password,W" env:"PASSWORD" description:"Password to login. Also configurable via PASSWORD."`
 		UserPassPath    string `flag:"userpass-path,P" env:"USERPASS_PATH" default:"userpass" description:"Path user was registered. Also configurable via USERPASS_PATH."`
 
 	}{}
@@ -73,10 +73,6 @@ func config() (map[string]string) {
 		usage("No output file given")
 	}
 
-	if cfg.Environment == "" {
-		usage("No Environment was set")
-	}
-
 	return credentials
 }
 
@@ -84,7 +80,7 @@ func main() {
 
 	credentials := config()
 
-	renderer, err := template.NewVaultTemplateRenderer(credentials, cfg.VaultEndpoint, cfg.Environment)
+	renderer, err := template.NewVaultTemplateRenderer(credentials, cfg.VaultHost, cfg.PathParams)
 
 	if err != nil {
 		log.Fatalf("Unable to create renderer: %s", err)
