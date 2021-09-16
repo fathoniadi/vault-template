@@ -101,26 +101,14 @@ More real example:
 
 ```gotemplate
 ---
-# Common vars
-{{- $customer    := .CUSTOMER }}
-{{- $stage       := .STAGE }}
-{{- $project     := .PROJECT }}
-{{- $postgres    := print "kv/data/" $customer "/" $stage "/" $project "/postgres" }}
-{{- $postgresMap := vaultMap $postgres }}
 
-postgresql:
-  postgresqlUsername: {{ $postgresMap.data.user }}
-  postgresqlPassword: {{ $postgresMap.data.password }}
-  postgresqlDatabase: {{ $postgresMap.data.db }}
-
-app:
-  postgres:
-{{ range $name, $secret := $postgresMap }}
-    {{ $name }}: {{ $secret }}
+{{ range $name, $secret := vaultMap "thoni-website/{{ .Environment }}/database" "version:1"}}
+{{ $name }}: {{ $secret }}
 {{- end }}
+
 ```
 
 And command that use this template in kubernetes:
 ```
-CUSTOMER=internal STAGE=test PROJECT=myprj vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f "$(token)"
+CUSTOMER=internal STAGE=test PROJECT=myprj vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f "$(token)" -e development
 ```
