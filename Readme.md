@@ -46,10 +46,35 @@ mySecretName = john
 mySecretPassword = secret
 ```
 
+with specific version of secret:
+
+```gotemplate
+mySecretName = {{ vault "secret/mySecret" "name" "version:1" }}
+mySecretPassword = {{ vault "secret/mySecret" "password" }}
+```
+
+```text
+mySecretName = johni
+mySecretPassword = secret
+```
+
+
 The `vaultMap` function takes one string parameter which specify the path to the secret to return.
 
 ```gotemplate
 {{ range $name, $secret := vaultMap "secret/mySecret"}}
+{{ $name }}: {{ $secret }}
+{{- end }}
+```
+
+```text
+name: john
+password: secret
+```
+
+with specific version:
+```gotemplate
+{{ range $name, $secret := vaultMap "secret/mySecret" "version:1"}}
 {{ $name }}: {{ $secret }}
 {{- end }}
 ```

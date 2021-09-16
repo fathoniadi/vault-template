@@ -68,7 +68,7 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 	data, err := ParsingParameter(parameters)
 
 	if err != nil  {
-		return "", err
+		return nil, err
 	}
 
 	secret, err := c.apiClient.Logical().ReadWithData(string(FixingPath(path)), data)
@@ -80,7 +80,13 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 		return nil, fmt.Errorf("path '%s' is not found in version '%s'", path, "a")
 	}
 
-	return secret.Data, nil
+	m, ok := secret.Data["data"].(map[string]interface{})
+	if !ok {
+		fmt.Printf("%T %#v\n", secret.Data["data"], secret.Data["data"])
+		return nil, fmt.Errorf("error reading path '%s'", path)
+	}
+
+	return m, nil
 }
 
 func (c *vaultClient) QuerySecret(path string, field string, parameters ...string) (string, error) {
