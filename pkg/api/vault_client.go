@@ -6,6 +6,7 @@ import (
 	"strings"
 	"reflect"
 	"encoding/json"
+	"github.com/fathoniadi/vault-template/pkg/libraries"
 
 )
 
@@ -16,39 +17,17 @@ type VaultClient interface {
 
 type vaultClient struct {
 	apiClient *api.Client
-}
-
-func FixingPath(path string) (string) {
-	pathSplited := strings.Split(path, string('/'))
-	pathSplited[0] = pathSplited[0] + "/data"
-	return strings.Join(pathSplited, string('/'))
-
-}
-
-func ParsingParameter(parameters []string) (map[string][]string, error) {
-	var data map[string][]string = make(map[string][]string)
-
-	if len(parameters) > 0 {
-		paramatersSplited := strings.Split(parameters[0], string(','))
-
-		for _, arguments := range paramatersSplited {
-			arguments_data := strings.Split(arguments, string(':'))
-			if len(arguments_data) == 1 || len(arguments_data) > 2 {
-				return data, fmt.Errorf("Error parsing parameter '%s'", arguments_data[0])
-			}
-
-			data[arguments_data[0]] = []string{arguments_data[1]}
-		}
-	}
-
-	return data, nil
+	pathHandler libraries.PathHandler
 }
 
 
-func NewVaultClient(vaultEndpoint string, vaultToken string) (VaultClient, error) {
+func NewVaultClient(vaultEndpoint string, vaultToken string, envPath string) (VaultClient, error) {
+
 	apiClient, err := api.NewClient(&api.Config{
 		Address: vaultEndpoint,
 	})
+
+	pathHandler := libraries.NewPathHandler(envPath)
 
 	if err != nil {
 		return nil, err
@@ -58,6 +37,7 @@ func NewVaultClient(vaultEndpoint string, vaultToken string) (VaultClient, error
 
 	vaultClient := &vaultClient{
 		apiClient: apiClient,
+		pathHandler: pathHandler,
 	}
 
 	return vaultClient, nil
@@ -67,7 +47,7 @@ func NewVaultClient(vaultEndpoint string, vaultToken string) (VaultClient, error
 func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[string]interface{}, error) {
 	var versionError string
 
-	data, err := ParsingParameter(parameters)
+	data, err := libraries.ParamParsingHandler(parameters)
 
 	if _, ok := data["version"]; ok {
 		versionError = " in version " + data["version"][0]
@@ -77,7 +57,13 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 		return nil, err
 	}
 
-	secret, err := c.apiClient.Logical().ReadWithData(string(FixingPath(path)), data)
+	path, err = c.pathHandler.RenderPath(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	secret, err := c.apiClient.Logical().ReadWithData(string(c.pathHandler.PathV2(path)), data)
 
 	if err != nil {
 		return nil, err
@@ -122,7 +108,7 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 
 	var versionError string
 
-	data, err := ParsingParameter(parameters)
+	data, err := libraries.ParamParsingHandler(parameters)
 
 	if _, ok := data["version"]; ok {
 		versionError = " in version " + data["version"][0]
@@ -132,7 +118,13 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 		return "", err
 	}
 
-	secret, err := c.apiClient.Logical().ReadWithData(string(FixingPath(path)), data)
+	path, err = c.pathHandler.RenderPath(path)
+
+	if err != nil {
+		return "", err
+	}
+
+	secret, err := c.apiClient.Logical().ReadWithData(string(c.pathHandler.PathV2(path)), data)
 
 
 	if secret == nil {
