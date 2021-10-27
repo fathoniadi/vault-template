@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/vault/api"
 	"strings"
-	"reflect"
 	"encoding/json"
 	"github.com/fathoniadi/vault-template/pkg/libraries"
 
@@ -166,20 +165,12 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 			return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 		}
 
-		typeValue := reflect.TypeOf(secretValue).Kind()
-
-		if (typeValue == reflect.String) {
-			return secretValue.(string), nil
-		}
-
 		jsonData, err := json.Marshal(secretValue)
 
 		if err != nil {
 			return "", fmt.Errorf("Error parsing field %s", field)
 		}
-
 		return string(jsonData), nil
-
 	}
 
 	return secretValue.(string), nil
