@@ -9,9 +9,9 @@ import (
 
 type PathHandler interface {
 	getDynamicPathVariable() (string)
+	getDynamicParamParsed() (map[string]interface{}, error)
 	PathV2(path string) (string)
 	RenderPath(path string) (string, error)
-	GetDynamicParamParsed() (map[string]interface{}, error)
 	PathParamsParsing(parameters []string) (map[string][]string, error)
 }
 
@@ -32,7 +32,7 @@ func (p *pathHandler) getDynamicPathVariable() (string) {
 	return p.dynamiCPathVariable
 }
 
-func (p *pathHandler) GetDynamicParamParsed() (map[string]interface{}, error){
+func (p *pathHandler) getDynamicParamParsed() (map[string]interface{}, error){
 	var data map[string]interface{} = make(map[string]interface{})
 
 	if (p.getDynamicPathVariable() == ""){
@@ -83,7 +83,7 @@ func (p *pathHandler) PathParamsParsing(parameters []string) (map[string][]strin
 func (p *pathHandler) RenderPath(path string) (string, error) {
 	var renderedPath bytes.Buffer
 
-	params, err := p.GetDynamicParamParsed()
+	params, err := p.getDynamicParamParsed()
 
 	if err != nil {
 		return "", err
