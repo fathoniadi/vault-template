@@ -14,9 +14,9 @@ type VaultTemplateRenderer struct {
 	
 }
 
-func NewVaultTemplateRenderer(credentials map[string]string, vaultEndpoint string, environment string) (*VaultTemplateRenderer, error) {
+func NewVaultTemplateRenderer(credentials map[string]string, vaultEndpoint string, dynamicPathVariable string) (*VaultTemplateRenderer, error) {
 
-	vaultClient, err := api.NewVaultClient(vaultEndpoint, credentials, environment)
+	vaultClient, err := api.NewVaultClient(vaultEndpoint, credentials, dynamicPathVariable)
 
 	if err != nil {
 		return nil, err

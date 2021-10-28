@@ -9,31 +9,34 @@ Render templated config files with secrets from [HashiCorp Vault](https://www.va
 
 ```text
 Usage of ./vault-template:
-  -o, --output string             The output file.
-                                  Also configurable via OUTPUT_FILE.
-  -t, --template string           The template file to render.
-                                  Also configurable via TEMPLATE_FILE.
-  -v, --vault string              Vault API endpoint.
-                                  Also configurable via VAULT_ADDR.
-                                  (default "http://127.0.0.1:8200")
-  -f, --vault-token string        The vault token.
-                                  Also configurable via VAULT_TOKEN_FILE.
-  
-  -u, --username string           Username to login
-                                  Also configurable via USERNAME
-
-  -e, --environment string        Path environment templating
-                                  Also configurable via ENVIRONMENT
-
-  -p, --password string           Password to login
-                                  Also configurable via PASSWORD
-
-  -P --userpass-path string       Path user was registered. 
-                                  Also configurable via USERPASS_PATH.
-                                  (default "userpass")
+  -h, --host string            Vault API endpoint. Also configurable via VAULT_HOST. (default "https://127.0.0.1:8200")
+  -o, --output string          The output file. Also configurable via OUTPUT_FILE.
+  -W, --password string        Password to login. Also configurable via PASSWORD.
+  -p, --path-params string     Dynamic variable path templating. Also configurable via DYNAMICPATHVARIABLE. Ex. "project=blog,environment=development"
+  -t, --template string        The template file to render. Also configurable via TEMPLATE_FILE.
+  -k, --token string           File containt vault token. Also configurable via VAULT_TOKEN.
+  -U, --username string        Username to login. Also configurable via USERNAME.
+  -P, --userpass-path string   Path user was registered. Also configurable via USERPASS_PATH. (default "userpass")
 ```
 
-A [docker image is availabe on Dockerhub.](https://hub.docker.com/r/rplan/vault-template)
+[docker image is availabe on Dockerhub.](https://hub.docker.com/r/fathoniadi/vault-template)
+
+## Auth
+
+The `vault-template` support two mechanism vault's authentication, using token or username and password.
+
+Example using token:
+
+```
+vault-template -t ./env -o ./env.ready -h "http://localhost:8200" -k "$(cat ./token)"
+```
+
+Example using username and password
+
+```
+vault-template -t ./env -o ./env.ready -h "http://localhost:8200" -U fathoniadi -W "$(cat ./password)"
+```
+
 
 ## Template
 
@@ -45,9 +48,7 @@ Currently vault-template can render two functions:
 - `vault`
 - `vaultMap`
 
-Also it is possible to use environment variables like `{{ .STAGE }}`.
-
-The `vault` function takes two string parameters which specify the path to the secret and the field inside to return.
+The `vault` function takes three string parameters which specify the path to the secret, the field inside to return and the version of secret.
 
 ```gotemplate
 mySecretName = {{ vault "secret/mySecret" "name" }}
@@ -59,10 +60,15 @@ mySecretName = john
 mySecretPassword = secret
 ```
 
+
+Note:
+If you don't specify the version of secret, the `vault` function will return value from the latest version of secret
+
+
 with specific version of secret:
 
 ```gotemplate
-mySecretName = {{ vault "secret/mySecret" "name" "version:1" }}
+mySecretName = {{ vault "secret/mySecret" "name" "version=1" }}
 mySecretPassword = {{ vault "secret/mySecret" "password" }}
 ```
 
@@ -72,7 +78,9 @@ mySecretPassword = secret
 ```
 
 
-The `vaultMap` function takes one string parameter which specify the path to the secret to return.
+The `vaultMap` function takes two string parameter which specify the path to the secret to return and the version of secret.
+
+
 
 ```gotemplate
 {{ range $name, $secret := vaultMap "secret/mySecret"}}
@@ -85,9 +93,12 @@ name: john
 password: secret
 ```
 
+Note:
+If you don't specify the version of secret, the `vaultMap` function will return value from the latest version of secret
+
 with specific version:
 ```gotemplate
-{{ range $name, $secret := vaultMap "secret/mySecret" "version:1"}}
+{{ range $name, $secret := vaultMap "secret/mySecret" "version=1"}}
 {{ $name }}: {{ $secret }}
 {{- end }}
 ```
@@ -97,18 +108,22 @@ name: johni
 password: secret
 ```
 
-More real example:
+### Path Paramaterized 
 
 ```gotemplate
 ---
 
-{{ range $name, $secret := vaultMap "thoni-website/{{ .Environment }}/database" "version:1"}}
+{{ range $name, $secret := vaultMap "{{ .project }}/{{ .environment }}/database" "version=1"}}
 {{ $name }}: {{ $secret }}
 {{- end }}
 
 ```
 
-And command that use this template in kubernetes:
+And command that use this feature:
+
 ```
-vault-template -o values.yaml -t values.tmpl -v "http://vault.default.svc.cluster.local:8200" -f "$(token)" -e development
+vault-template -o values.yaml -t values.tmpl -v "http://localhost:8200" -k "$(token)" -p "project=devops,environment=development"
 ```
+
+
+Forking from `vault-template` by [Actano GmbH](https://github.com/actano) and [Minh-Danh](https://github.com/minhdanh). Thanks for your great work.
