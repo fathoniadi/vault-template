@@ -124,3 +124,6 @@ And command that use this feature:
 ```
 vault-template -o values.yaml -t values.tmpl -v "http://localhost:8200" -k "$(token)" -p "project=devops,environment=development"
 ```
+
+
+Forking from `vault-template` by [Actano GmbH](https://github.com/actano) and [Minh-Danh](https://github.com/minhdanh). Thanks for your great work.
