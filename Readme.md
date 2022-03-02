@@ -17,6 +17,8 @@ Usage of ./vault-template:
   -k, --token string           File containt vault token. Also configurable via VAULT_TOKEN.
   -U, --username string        Username to login. Also configurable via USERNAME.
   -P, --userpass-path string   Path user was registered. Also configurable via USERPASS_PATH. (default "userpass")
+  --approleid string           AppRole ID
+  --approlesecret string       AppRole Secret ID
 ```
 
 [docker image is availabe on Dockerhub.](https://hub.docker.com/r/fathoniadi/vault-template)
@@ -35,6 +37,11 @@ Example using username and password
 
 ```
 vault-template -t ./env -o ./env.ready -h "http://localhost:8200" -U fathoniadi -W "$(cat ./password)"
+```
+
+Example using AppRole
+```
+./vault-template -t ./env -o ./env.ready --approleid 00108aa6-1234-1234-1234-66efefd00000 --approlesecret 0056cccc-b017-1234-bbbb-be2febe00000 
 ```
 
 

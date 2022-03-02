@@ -1,12 +1,13 @@
 package api
 
 import (
-	"fmt"
-	"github.com/hashicorp/vault/api"
-	"strings"
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/fathoniadi/vault-template/pkg/libraries"
-
+	"github.com/hashicorp/vault/api"
+	"github.com/hashicorp/vault/api/auth/approle"
+	"strings"
 )
 
 type VaultClient interface {
@@ -15,21 +16,20 @@ type VaultClient interface {
 }
 
 type vaultClient struct {
-	apiClient *api.Client
+	apiClient   *api.Client
 	pathHandler libraries.PathHandler
 }
 
 func LoginWithToken(apiClient *api.Client, token string) {
 	apiClient.SetToken(strings.TrimSpace(token))
-} 
-
+}
 
 func LoginWithUserPass(apiClient *api.Client, credentials map[string]string) (string, error) {
 	options := map[string]interface{}{
 		"password": credentials["password"],
 	}
 
-	path := fmt.Sprintf("auth/%s/login/%s", credentials["userpass_path"] , credentials["username"])
+	path := fmt.Sprintf("auth/%s/login/%s", credentials["userpass_path"], credentials["username"])
 
 	secret, err := apiClient.Logical().Write(path, options)
 
@@ -42,6 +42,31 @@ func LoginWithUserPass(apiClient *api.Client, credentials map[string]string) (st
 	return token, nil
 }
 
+func LoginWithApprole(apiClient *api.Client, credentials map[string]string) (*api.Secret, error) {
+
+	appRoleSecretID := &approle.SecretID{
+		FromString: credentials["approlesecretid"],
+	}
+
+	appRoleAuth, err := approle.NewAppRoleAuth(
+		credentials["approleid"],
+		appRoleSecretID,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	authInfo, err := apiClient.Auth().Login(context.TODO(), appRoleAuth)
+	if err != nil {
+		return nil, fmt.Errorf("unable to login to AppRole auth method: %w", err)
+	}
+	if authInfo == nil {
+		return nil, fmt.Errorf("no auth info was returned after login")
+	}
+
+	return authInfo, nil
+}
 
 func NewVaultClient(vaultHost string, credentials map[string]string, dynamicPathVariable string) (VaultClient, error) {
 	apiClient, err := api.NewClient(&api.Config{
@@ -52,62 +77,66 @@ func NewVaultClient(vaultHost string, credentials map[string]string, dynamicPath
 		return nil, err
 	}
 
-	if(credentials["auth_method"] == "token"){
+	if credentials["auth_method"] == "token" {
 		LoginWithToken(apiClient, credentials["token"])
-	} else {
+	} else if credentials["auth_method"] == "userpass" {
 		token, err := LoginWithUserPass(apiClient, credentials)
 		LoginWithToken(apiClient, token)
 		if err != nil {
 			return nil, fmt.Errorf("Invalid user or password")
 		}
+	} else {
+		_, err := LoginWithApprole(apiClient, credentials)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid AppRole ID or secret: %s", err)
+		}
 	}
 
 	pathHandler := libraries.NewPathHandler(dynamicPathVariable)
-	
+
 	vaultClient := &vaultClient{
-		apiClient: apiClient,
+		apiClient:   apiClient,
 		pathHandler: pathHandler,
 	}
-	
+
 	return vaultClient, nil
 }
 
-
 func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[string]interface{}, error) {
 	var versionError string
-	
+
 	data, err := c.pathHandler.PathParamsParsing(parameters)
 	if _, ok := data["version"]; ok {
 		versionError = " in version " + data["version"][0]
 	}
-	
-	if err != nil  {
+
+	if err != nil {
 		return nil, err
 	}
-	
+
 	path, err = c.pathHandler.RenderPath(path)
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	secret, err := c.apiClient.Logical().ReadWithData(string(c.pathHandler.PathV2(path)), data)
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if secret == nil {
 		return nil, fmt.Errorf("path '%s' is not found'%s'", path, versionError)
 	}
-	
+
 	m, ok := secret.Data["data"].(map[string]interface{})
-	
+
 	if !ok {
 		fmt.Printf("%T %#v\n", secret.Data["data"], secret.Data["data"])
 		return nil, fmt.Errorf("error reading path '%s'", path)
 	}
-	
+
 	for key, value := range m {
 		jsonData, err := json.Marshal(value)
 
@@ -117,7 +146,7 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 
 		m[key] = string(jsonData)
 	}
-	
+
 	return m, nil
 }
 
@@ -129,7 +158,7 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 	if _, ok := data["version"]; ok {
 		versionError = " in version " + data["version"][0]
 	}
-	if err != nil  {
+	if err != nil {
 		return "", err
 	}
 
