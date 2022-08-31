@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/Luzifer/rconfig v2.2.0+incompatible
-	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.1.0
 	github.com/golang/mock v1.2.0
