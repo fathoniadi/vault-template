@@ -179,7 +179,6 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 		if err != nil {
 			return "", fmt.Errorf("Error parsing field %s", field)
 		}
-		fmt.Println(string(jsonData))
 		return string(jsonData), nil
 	}
 
