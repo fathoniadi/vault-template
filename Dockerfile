@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine as build
+FROM golang:1.16 as build
 
 # build binary
 WORKDIR /src
@@ -12,4 +12,4 @@ FROM alpine
 COPY --from=build /etc/ssl/certs /etc/ssl/certs
 COPY --from=build /vault-template /bin/vault-template
 
-ENTRYPOINT ["/vault-template"]
+ENTRYPOINT ["/bin/vault-template"]

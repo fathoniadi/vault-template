@@ -18,8 +18,8 @@ var (
 		Username            string `flag:"username,U" env:"USERNAME" description:"Username to login. Also configurable via USERNAME."`
 		Password            string `flag:"password,W" env:"PASSWORD" description:"Password to login. Also configurable via PASSWORD."`
 		UserPassPath        string `flag:"userpass-path,P" env:"USERPASS_PATH" default:"userpass" description:"Path user was registered. Also configurable via USERPASS_PATH."`
-		AppRoleID           string `flag:"approleid" description:"AppRole ID"`
-		AppRoleSecret       string `flag:"approlesecret" description:"AppRole Secret ID"`
+		AppRoleID           string `flag:"approleid,i" env:"AppRoleID" description:"AppRole ID. Also configurable via AppRoleID."`
+		AppRoleSecret       string `flag:"approlesecret,s" env:"AppRoleSecret" description:"AppRole Secret ID. Also via AppRoleSecret."`
 	}{}
 )
 

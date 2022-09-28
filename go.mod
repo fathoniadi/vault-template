@@ -1,6 +1,6 @@
 module github.com/fathoniadi/vault-template
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Luzifer/rconfig v2.2.0+incompatible
@@ -9,6 +9,7 @@ require (
 	github.com/golang/mock v1.2.0
 	github.com/hashicorp/vault/api v1.3.0
 	github.com/hashicorp/vault/api/auth/approle v0.1.1
+	github.com/hashicorp/vault/api/auth/userpass v0.1.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
