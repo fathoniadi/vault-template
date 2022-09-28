@@ -8,7 +8,9 @@ Render templated config files with secrets from [HashiCorp Vault](https://www.va
 ## Usage
 
 ```text
-Usage of ./vault-template:
+Usage of vault-template:
+  -i, --approleid string       AppRole ID. Also configurable via AppRoleID.
+  -s, --approlesecret string   AppRole Secret ID. Also via AppRoleSecret.
   -h, --host string            Vault API endpoint. Also configurable via VAULT_HOST. (default "https://127.0.0.1:8200")
   -o, --output string          The output file. Also configurable via OUTPUT_FILE.
   -W, --password string        Password to login. Also configurable via PASSWORD.
@@ -17,8 +19,6 @@ Usage of ./vault-template:
   -k, --token string           File containt vault token. Also configurable via VAULT_TOKEN.
   -U, --username string        Username to login. Also configurable via USERNAME.
   -P, --userpass-path string   Path user was registered. Also configurable via USERPASS_PATH. (default "userpass")
-  --approleid string           AppRole ID
-  --approlesecret string       AppRole Secret ID
 ```
 
 [docker image is availabe on Dockerhub.](https://hub.docker.com/r/fathoniadi/vault-template)
@@ -133,4 +133,4 @@ vault-template -o values.yaml -t values.tmpl -v "http://localhost:8200" -k "$(to
 ```
 
 
-Forking from `vault-template` by [Actano GmbH](https://github.com/actano) and [Minh-Danh](https://github.com/minhdanh). Thanks for your great work.
+Forked from `vault-template` by [Actano GmbH](https://github.com/actano) and [Minh-Danh](https://github.com/minhdanh). Thanks for your great work.
