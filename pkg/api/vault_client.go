@@ -9,6 +9,7 @@ import (
 	"github.com/fathoniadi/vault-template/pkg/libraries"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
+	"github.com/hashicorp/vault/api/auth/userpass"
 )
 
 func JSONMarshal(t interface{}) ([]byte, error) {
@@ -33,22 +34,32 @@ func LoginWithToken(apiClient *api.Client, token string) {
 	apiClient.SetToken(strings.TrimSpace(token))
 }
 
-func LoginWithUserPass(apiClient *api.Client, credentials map[string]string) (string, error) {
-	options := map[string]interface{}{
-		"password": credentials["password"],
+func LoginWithUserPass(apiClient *api.Client, credentials map[string]string) (*api.Secret, error) {
+	userPassword := &userpass.Password{
+		FromString: credentials["password"],
 	}
 
-	path := fmt.Sprintf("auth/%s/login/%s", credentials["userpass_path"], credentials["username"])
+	loginOption := userpass.WithMountPath(credentials["userpass_path"])
 
-	secret, err := apiClient.Logical().Write(path, options)
+	userPassAuth, err := userpass.NewUserpassAuth(
+		credentials["username"],
+		userPassword,
+		loginOption,
+	)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	token := secret.Auth.ClientToken
+	authInfo, err := apiClient.Auth().Login(context.TODO(), userPassAuth)
+	if err != nil {
+		return nil, fmt.Errorf("unable to login to AppRole auth method: %w", err)
+	}
+	if authInfo == nil {
+		return nil, fmt.Errorf("no auth info was returned after login")
+	}
 
-	return token, nil
+	return authInfo, nil
 }
 
 func LoginWithApprole(apiClient *api.Client, credentials map[string]string) (*api.Secret, error) {
@@ -89,10 +100,9 @@ func NewVaultClient(vaultHost string, credentials map[string]string, dynamicPath
 	if credentials["auth_method"] == "token" {
 		LoginWithToken(apiClient, credentials["token"])
 	} else if credentials["auth_method"] == "userpass" {
-		token, err := LoginWithUserPass(apiClient, credentials)
-		LoginWithToken(apiClient, token)
+		_, err := LoginWithUserPass(apiClient, credentials)
 		if err != nil {
-			return nil, fmt.Errorf("Invalid user or password")
+			return nil, fmt.Errorf("Invalid user or password: %s", err)
 		}
 	} else {
 		_, err := LoginWithApprole(apiClient, credentials)
