@@ -3,12 +3,21 @@ package api
 import (
 	"context"
 	"encoding/json"
+  "bytes"
+  "strings"
 	"fmt"
 	"github.com/fathoniadi/vault-template/pkg/libraries"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
-	"strings"
 )
+
+func JSONMarshal(t interface{}) ([]byte, error) {
+    buffer := &bytes.Buffer{}
+    encoder := json.NewEncoder(buffer)
+    encoder.SetEscapeHTML(false)
+    err := encoder.Encode(t)
+    return buffer.Bytes(), err
+}
 
 type VaultClient interface {
 	QuerySecret(path string, field string, parameters ...string) (string, error)
@@ -138,7 +147,7 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 	}
 
 	for key, value := range m {
-		jsonData, err := json.Marshal(value)
+		jsonData, err := JSONMarshal(value)
 
 		if err != nil {
 			return nil, fmt.Errorf("Error parsing field %s", key)
@@ -193,8 +202,7 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 		if !ok {
 			return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 		}
-
-		jsonData, err := json.Marshal(secretValue)
+		jsonData, err := JSONMarshal(secretValue)
 
 		if err != nil {
 			return "", fmt.Errorf("Error parsing field %s", field)
