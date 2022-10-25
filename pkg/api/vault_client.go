@@ -21,7 +21,7 @@ func JSONMarshal(t interface{}) ([]byte, error) {
 }
 
 type VaultClient interface {
-	QuerySecret(path string, field string, parameters ...string) (string, error)
+	QuerySecret(path string, field string, parameters ...string) (interface{}, error)
 	QuerySecretMap(path string, parameters ...string) (map[string]interface{}, error)
 }
 
@@ -102,6 +102,9 @@ func NewVaultClient(vaultHost string, credentials map[string]string, dynamicPath
 	} else if credentials["auth_method"] == "userpass" {
 		_, err := LoginWithUserPass(apiClient, credentials)
 		if err != nil {
+			if(strings.Contains(fmt.Sprint(err), "timeout")){
+				fmt.Println("timeout")
+			}
 			return nil, fmt.Errorf("Invalid user or password: %s", err)
 		}
 	} else {
@@ -169,7 +172,7 @@ func (c *vaultClient) QuerySecretMap(path string, parameters ...string) (map[str
 	return m, nil
 }
 
-func (c *vaultClient) QuerySecret(path string, field string, parameters ...string) (string, error) {
+func (c *vaultClient) QuerySecret(path string, field string, parameters ...string) (interface{}, error) {
 	var versionError string
 
 	data, err := c.pathHandler.PathParamsParsing(parameters)
@@ -178,47 +181,53 @@ func (c *vaultClient) QuerySecret(path string, field string, parameters ...strin
 		versionError = " in version " + data["version"][0]
 	}
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	path, err = c.pathHandler.RenderPath(path)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	secret, err := c.apiClient.Logical().ReadWithData(string(c.pathHandler.PathV2(path)), data)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if secret == nil {
-		return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
+		return nil, fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 	}
 
 	secretValue, ok := secret.Data[field]
-
 	if !ok {
 		m, ok := secret.Data["data"].(map[string]interface{})
 
 		if !ok {
 			fmt.Printf("%T %#v\n", secret.Data["data"], secret.Data["data"])
-			return "", fmt.Errorf("error reading path '%s'", path)
+			return nil, fmt.Errorf("error reading path '%s'", path)
 		}
 
 		secretValue, ok := m[field]
 
 		if !ok {
-			return "", fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
+			return nil, fmt.Errorf("secret at path '%s'%s has no field '%s'", path, versionError, field)
 		}
+
 		jsonData, err := JSONMarshal(secretValue)
 
+
 		if err != nil {
-			return "", fmt.Errorf("Error parsing field %s", field)
+			return nil, fmt.Errorf("Error parsing field %s", field)
 		}
 		return string(jsonData), nil
 	}
 
-	return secretValue.(string), nil
+	jsonData, err := JSONMarshal(secretValue)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing field %s", field)
+	}
+	return string(jsonData), nil
 }
